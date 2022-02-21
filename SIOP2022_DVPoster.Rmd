@@ -1,0 +1,233 @@
+---
+title: 'O\*Net Demands and Resources: Associations with Stress, Burnout, and Engagement'
+author:
+  - name: Renata Garcia Prieto Palacios Roji
+    affil: 1
+  - name: Alicia Stachowski
+    affil: 2
+    orcid: '0000-0003-3595-6339'
+  - name: John Kulas
+    affil: 1
+    orcid: '0000-0003-4780-421X'
+affiliation:
+  - num: 1
+    address: Montclair State University
+  - num: 2
+    address: University of Wisconsin-Stout
+primary_colour: "#640d14"      ## https://coolors.co/250902-38040e-640d14-800e13-ad2831
+secondary_colour: "#ad2831"
+accent_colour: "#38040e"
+sectitle_bgcol: "#640d14"
+authorextra_textsize: "70px"
+affiliation_textsize: "50px"
+reference_textsize: "40px"
+caption_textsize: "40pt"
+column_numbers: 3
+title_textsize: "105pt"         ## https://githubhelp.com/brentthorne/posterdown
+#main_picwidth: "55%"           ## https://github.com/brentthorne/posterdown/wiki/posterdown_betterland
+main_findings: 
+  - '![](iccs.svg){.main_pic}' # main_pic is used to center align 
+#  - '![](ChallPlot.svg){.main_pic}'
+#  - '![](HinderPlot.svg){.main_pic}'
+logoleft_name: '![](https://www.montclair.edu/university-communications/wp-content/uploads/sites/144//2020/10/hawk-logo-color.svg){.new-img-left}'
+#logoright_name: '![](Quill_White.png){.main-img-right}'
+logoright_name: '![](Quill_White.png){.new-img-right}'
+main_width: 0.3	
+csl: "apa7.csl"
+body_textsize: "48px"
+poster_height: "50in"
+poster_width: "70in"
+output: 
+    posterdown::posterdown_betterland:
+    self_contained: false
+bibliography: ["jdr.bib", "packages.bib"]
+suppress-bibliography: true 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{css, echo=FALSE}
+.main_pic {
+  border-radius: 50%;
+  width: 90%;
+  vertical-align: top;
+}
+
+.main-img-right {
+  width: 100%;
+}
+
+.new-img-right {
+  position: absolute;
+  bottom: 100px;
+  right: 150px;
+  width: 1500px;           /* Play with width and height specifications if image stretches*/
+  height: 800px;
+}
+
+.new-img-left {
+  position: absolute;
+  bottom: 100px;
+  left: 100px;
+  width: 1200px;           /* Play with width and height specifications if image stretches*/
+  height: 1100px;
+}
+
+.new-img-top {
+  position: absolute;
+  top: 100px;
+  left: 100px;
+  width: 1200px;           
+  height: 100px;
+}
+
+```
+
+```{r data, include = FALSE}
+data<-read.csv("simulated_data.csv", header=FALSE)
+pseudob<-abs(qnorm(.5))
+#data$v30<-abs(data$v30-1)
+library(mirt)
+library(latticeExtra)
+library(irtplay)
+library(psych)
+library(tidyverse)
+c<-0
+ahat<-function(x){
+  r<-(((2.71828)^x)-(1/(2.71828)^x))/(2.71828-(2.71828)^x)
+  
+  ((0.51+(0.02*pseudob)+(0.301*pseudob^2))*r)+((0.57-(0.009*pseudob)+(0.19*pseudob^2))*r)
+  
+}
+
+mod<-mirt(data, 1, itemtype="2PL")
+#plot(mod, type="trace")
+# 
+alphas<-psych::alpha(data)
+citcs<-data.frame(alphas$item.stats$r.drop)
+pseudoA<-data.frame(ahat(citcs))
+pseudoB<-data.frame(qnorm(colMeans(data)))
+IRT_parms <- coef(mod, IRTpars = TRUE, simplify = TRUE)
+irt <- IRT_parms$items
+df<-as.data.frame(cbind(citcs, pseudoA, pseudoB, irt))
+colnames(df)<-c("CITC", "PseudoA", "PseudoB", "a", "b", "c1", "c2")
+
+# plot(df$PseudoA, df$a)
+# plot(df$b, df$PseudoB)
+
+lm.reg<-lm(b ~PseudoB, data=df)
+ 
+
+b<-0.01479-(-1.33142*pseudoB) 
+dat<-data.frame(b, alphas$item.stats$r.drop)
+colnames(dat)<-c("b", "corrected item totals")
+par(cex.axis=1, cex.lab=1, cex.main=2, cex.sub=0.1)
+
+citcs<-data.frame(alphas$item.stats$r.drop)
+pseudoA<-data.frame(ahat(citcs))
+pseudoB<-b
+IRT_parms <- coef(mod, IRTpars = TRUE, simplify = TRUE)
+irt <- IRT_parms$items
+df<-as.data.frame(cbind(citcs, pseudoA, pseudoB, irt))
+colnames(df)<-c("CITC", "PseudoA", "PseudoB", "a", "b", "c1", "c2")
+
+```
+
+```{r ResourPlot, warning=FALSE}
+
+svg("iccs.svg")
+p_ctt<-0
+p_irt<-0
+
+
+eq_CTT<- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$PseudoA[1]*(x-df$PseudoB[1]))))))}
+eq_IRT<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[1]*(x-df$b[1]))))))}
+
+
+eq_CTT2<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$PseudoA[60]*((x+1)-df$PseudoB[60]))))))}
+eq_IRT2<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[60]*((x+1)-df$b[60]))))))}
+
+eq_CTT3<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$PseudoA[26]*((x-3)-df$PseudoB[26]))))))}
+eq_IRT3<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[26]*((x-3)-df$b[26]))))))}
+
+
+
+colors<-c("CTT"="#00FFFF", "IRT"="#FF00FF")
+base <-
+  ggplot()
+
+
+base+
+  xlim(-2,5)+
+  geom_function(fun=eq_CTT, size=3, color="black")+
+  geom_function(fun=eq_CTT, size=1.5, aes(color="CTT", size=0.5))+
+  geom_function(fun=eq_IRT, size=3, color="black")+
+  geom_function(fun=eq_IRT, size=1.5, aes(color="IRT"))+
+  geom_function(fun=eq_CTT2, size=3, color="black")+
+  geom_function(fun=eq_CTT2, size=1.5, aes(color="CTT"))+
+  geom_function(fun=eq_IRT2, size=3, color="black")+
+  geom_function(fun=eq_IRT2, size=1.5, aes(color="IRT"))+
+  geom_function(fun=eq_CTT3, size=3, color="black")+
+  geom_function(fun=eq_CTT3, size=1.5, aes(color="CTT"))+
+  geom_function(fun=eq_IRT3, size=3, color="black")+
+  geom_function(fun=eq_IRT3, size=1.5, aes(color="IRT"))+
+  labs(x="Thetas",
+       y="p(x)",
+       color="Legend")+
+  scale_color_manual(values=colors)
+
+
+dev.off()
+
+```
+
+
+
+# Introduction
+Research on the job demands-resources theory [@bakker2017job] highlights the importance of work characteristics on the experience of motivation and strain, which in turn have an impact on job performance. We extend these perspectives to include challenge and hindrance demands. This study explores how these work experiences empirically relate to different work outcomes. We propose that:
+
+> **`Hypothesis 1:`** Job characteristics appraised as resources will be positively associated with engagement, and negatively associated with stress and burnout.
+
+> **`Hypothesis 2:`** Job characteristics appraised as challenge demands will be positively associated with engagement, and negatively associated with stress and burnout.
+
+> **`Hypothesis 3:`** Job characteristics appraised as hindrance demands will be negatively associated with engagement, and positively associated with stress and burnout.
+
+# Methods
+We evaluated associations between the antecedents and proximal outcomes of the Job Demands-Resources model [@bakker2017job; @bakker2003dual; @demerouti2001job], within the unifying framework of O\*Net. Specifically, focusing on the relationship between job characteristics and employee levels of job engagement, stress, and burnout. Our sample consists of 568 Prolific Panel participants.
+
+We examined job characteristics based on O\*Net's subcategories under work activity and work context. Burnout  and stress ) were measured using the Copenhagen Psychosocial Questionnaire [@burr_third_2019], and an overall engagement score was measured using an 18-item measure
+
+# Results
+The average perception that an O\*Net job element could be considered a resource was 3.77 with a standard deviation of 0.48. That it could be considered a challenge was 3.75 with a standard deviation of 0.50. Lastly, the average perception that it could be considered a hindrance was 2.39 with a standard deviation of 0.78.
+
+
+**Figure 1.** *Distributions of focal variables of interest*
+
+The figure in the center shows the relationships among resource dimensions (O*Net categories) as well as the three focal outcome variables. Regression analyses reveal that the more a work characteristic is perceived as a resource, the more engaged is the respondent ($R^2$ = .15, $F_{(7, 528)}$ = 12.82, $p$ < .001). Figure 2 shows the relationships among challenge demands and the three focal outcome variables. The impact of challenge demands on engagement was similar in direction and magnitude to that of resources ($R^2$ = .13, $F_{(7, 528)}$ = 11.03, $p$ < .001), with null effects for both stress ($R^2$= .01, $F_{(7, 528)}$ = 0.88, $p$ = .520) and burnout ($R^2$ = .02, $F_{(7, 528)}$ = 1.21, $p$ = .295). Figure 3 shows the relationships among hindrance demands and the three focal outcome variables. Regression analyses revealed a marginal association between a work characteristic perceived as a hindrance and lower levels of engagement ($R^2$ = .07, $F_{(7, 528)}$ = 5.84, $p$ < .001), with similar effects both between being viewed as a hindrance and increased stress ($R^2$ = .06, $F_{(7, 528)}$ = 4.88, $p$ < .001) and burnout ($R^2$ = .06, $F_{(7, 528)}$ = 4.90, $p$ < .001).
+
+
+
+**Figure 2.** *Challenge demand ratings (O\*Net characteristic category association).*
+
+
+
+**Figure 3.** *Hindrance demand ratings (O\*Net characteristic category association).*
+
+# Discussion 
+Largely aligning with the job-demands resources theory [@demerouti2001job], our results indicated that work characteristics perceived as resources were associated with greater engagement. Similarily,  characteristics perceived as challenge demands were associated with higher engagement. Further, job characteristics deemed hindrance demands were associated with lower engagement, higher stress, and greater burnout. 
+
+These results support prior research on the potential impact of challenge stressors on work outcomes [@cavanaugh2000empirical; @podsakoff2007differential]. Our results highlight the importance in noting the distinction between types of demands in future research and practice. Employers would benefit from understanding what work demands may be perceived as challenges, and leveraging them to increase desired work outcomes (e.g., engagement). 
+
+Future study could explore job characteristics at a more granular/individual level. Next, our study was limited to three outcomes of interest. A fruitful direction for future study would be consideration of additional outcomes (e.g., job satisfaction) as well. It would also be of interest to consider moderators of these relationships (e.g., industry type, personality). 
+
+```{r, include=FALSE}
+knitr::write_bib(c('knitr','rmarkdown','posterdown','pagedown'), 'packages.bib')
+```
+
+```{r img-with-knitr, echo=FALSE, fig.align='right', out.width='25%'}
+
+knitr::include_graphics("2022_SIOP_Seattle_Web.png")
+
+```
