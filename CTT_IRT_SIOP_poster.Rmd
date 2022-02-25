@@ -1,19 +1,13 @@
 ---
-title: 'O\*Net Demands and Resources: Associations with Stress, Burnout, and Engagement'
+title: 'Item Characteristic Curves generated from common CTT Item Statistics'
 author:
-  - name: Renata Garcia Prieto Palacios Roji
+  - name: Diego Figueiras
     affil: 1
-  - name: Alicia Stachowski
-    affil: 2
-    orcid: '0000-0003-3595-6339'
   - name: John Kulas
     affil: 1
-    orcid: '0000-0003-4780-421X'
 affiliation:
   - num: 1
     address: Montclair State University
-  - num: 2
-    address: University of Wisconsin-Stout
 primary_colour: "#640d14"      ## https://coolors.co/250902-38040e-640d14-800e13-ad2831
 secondary_colour: "#ad2831"
 accent_colour: "#38040e"
@@ -30,8 +24,7 @@ main_findings:
 #  - '![](ChallPlot.svg){.main_pic}'
 #  - '![](HinderPlot.svg){.main_pic}'
 logoleft_name: '![](https://www.montclair.edu/university-communications/wp-content/uploads/sites/144//2020/10/hawk-logo-color.svg){.new-img-left}'
-#logoright_name: '![](Quill_White.png){.main-img-right}'
-#logoright_name: '![](Quill_White.png){.new-img-right}'
+logoright_name: '![](https&#58;//raw.githubusercontent.com/brentthorne/posterdown/master/images/betterhexlogo.png){.main-img-right}'
 main_width: 0.3	
 csl: "apa7.csl"
 body_textsize: "48px"
@@ -45,7 +38,7 @@ suppress-bibliography: true
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE)
 ```
 
 ```{css, echo=FALSE}
@@ -83,7 +76,57 @@ knitr::opts_chunk$set(echo = FALSE)
   height: 100px;
 }
 
+p.caption {
+  font-size: 1em;         /* This sets figure caption font size */
+}
+
 ```
+
+# Introduction
+
+Item characteristic curves are frequently referenced by psychometricians as visual indicators of important attributes of assessment items - most frequently *difficulty* and *discrimination*. Assessment specialists who examine ICC's usually do so from within the psychometric framework of either Item Response Theory (IRT) or Rasch modeling. These frameworks provide the parameters necessary to plot the ogive functions.  If the curve transitions from low to high likelihood at a location toward the lower end of the trait (e.g., "left" on the plotting surface), this indicates that it is relatively easy to answer the item correctly. If the curve is sharp (e.g., strongly vertical), this indicates high discrimination; if it is flatter, that is an indication of poorer discrimination - see Figure \@ref(fig:example)).
+
+```{r example, include=TRUE, fig.cap="Item characteristic curves primarily reflecting differences in discrimination.", echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%"}
+
+data<-read.csv("simulated_data.csv", header=FALSE)
+#data$v30<-abs(data$v30-1)
+library(mirt)
+library(latticeExtra)
+pseudob<-abs(qnorm(.5))
+
+ahat<-function(x){
+  r<-(((2.71828)^x)-(2.71828)^-x)/(2.71828-(2.71828)^x)
+  ((0.51+(0.02*pseudob)+(0.301*pseudob^2))*r)
+  
+}
+pseudoa<-ahat(.3)
+c <- 0
+#change pseudob in this line for a scale that allows negative numbers
+p <- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(pseudoa*(x-pseudob))))))}
+
+curve(p, from=-5, to=5, ylim=c(0, 1),  col = "#F72119", lwd = 5) #, main="Item Characteristic Curves", xlab="Level of Trait")
+pseudob<-abs(qnorm(.2))
+pseudoa<-ahat(.7)
+curve(p, lty="longdash", add=TRUE, col = "#665AEA", lwd = 5)
+arrows(-3,0.4,-1.5,0.4,col="#F72119")
+text(-3.8,0.4, "Low \n Discrimination",col="#F72119")
+arrows(2,0.2,0.45,0.2,col="#665AEA")
+text(3,0.2, "High \n Discrimination",col="#665AEA")
+
+```
+
+From a Classical Test Theory (CTT) orientation, item  difficulty is most commonly represented by the percent of individuals answering the item correctly (also referred to as a *p-value*). Item discrimination can be conveyed via a few different CTT indices, but the most commonly calculated and consulted index is the corrected item total correlation. 
+
+# Method
+
+We simulated data using @han2007wingen software. Our sample was 10,000 observations, with a mean of 0 and a standard deviation of 1. The number of items were 100, with response categories of either correct or incorrect (1 and 0). The mean for the a-parameter for the simulated data was 2, and the standard deviation 0.8. The mean for the b-parameter was 0 and the standard deviation 0.5. The `mirt` package from @R-mirt was used to compute the IRT a-parameters and to plot the 2PL resulting model. As for the CTT-derived a-parameter, the modification to @lord2012applications's formula described earlier was used, as well as the re-scaling for the p-values. We additionally changed the scale of the difficulty estimates of CTT so they were on the same scale as the IRT estimates. This was done by building a regression model using the CTT a-estimate to predict the IRT a-parameter. The resulting values from this model were used in plotting the CTT-derived ICC's.
+
+We first propose an application of ICC’s with CTT indices then simulate data and quantify similarities and discrepancies between the IRT- and CTT-generated ICC’s. `Diego figure out a good spot for formulas in here using the $ specification` e.g., $$a_i\cong \frac{r_i}{\sqrt{1-r_i^2}}$$
+
+& 
+
+$$\hat{a_i}\cong[(.51 + .02z_g + .3z_g^2)r]+[(.57 - .009z_g + .19z_g^2)\frac{e^r-e^{-r}}{e-e^r}]$$
+
 
 ```{r data, include = FALSE}
 data<-read.csv("simulated_data.csv", header=FALSE)
@@ -135,6 +178,7 @@ colnames(df)<-c("CITC", "PseudoA", "PseudoB", "a", "b", "c1", "c2")
 
 ```
 
+
 ```{r ResourPlot, warning=FALSE}
 
 svg("iccs.svg")
@@ -154,7 +198,7 @@ eq_IRT3<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[26]*((x-3)-df$b[26])))
 
 
 
-colors<-c("CTT"="#00FFFF", "IRT"="#FF00FF")
+colors<-c("CTT"="cyan", "IRT"="#F72119")
 base <-
   ggplot()
 
@@ -162,17 +206,17 @@ base <-
 base+
   xlim(-2,5)+
   geom_function(fun=eq_CTT, size=3, color="black")+
-  geom_function(fun=eq_CTT, size=1.5, aes(color="CTT", size=0.5))+
+  geom_function(fun=eq_CTT, size=1, aes(color="CTT", size=0.5))+
   geom_function(fun=eq_IRT, size=3, color="black")+
-  geom_function(fun=eq_IRT, size=1.5, aes(color="IRT"))+
+  geom_function(fun=eq_IRT, size=1, aes(color="IRT"))+
   geom_function(fun=eq_CTT2, size=3, color="black")+
-  geom_function(fun=eq_CTT2, size=1.5, aes(color="CTT"))+
+  geom_function(fun=eq_CTT2, size=1, aes(color="CTT"))+
   geom_function(fun=eq_IRT2, size=3, color="black")+
-  geom_function(fun=eq_IRT2, size=1.5, aes(color="IRT"))+
+  geom_function(fun=eq_IRT2, size=1, aes(color="IRT"))+
   geom_function(fun=eq_CTT3, size=3, color="black")+
-  geom_function(fun=eq_CTT3, size=1.5, aes(color="CTT"))+
+  geom_function(fun=eq_CTT3, size=1, aes(color="CTT"))+
   geom_function(fun=eq_IRT3, size=3, color="black")+
-  geom_function(fun=eq_IRT3, size=1.5, aes(color="IRT"))+
+  geom_function(fun=eq_IRT3, size=1, aes(color="IRT"))+
   labs(x="Thetas",
        y="p(x)",
        color="Legend")+
@@ -184,49 +228,19 @@ dev.off()
 ```
 
 
-
-# Introduction
-Research on the job demands-resources theory [@bakker2017job] highlights the importance of work characteristics on the experience of motivation and strain, which in turn have an impact on job performance. We extend these perspectives to include challenge and hindrance demands. This study explores how these work experiences empirically relate to different work outcomes. We propose that:
-
-> **`Hypothesis 1:`** Job characteristics appraised as resources will be positively associated with engagement, and negatively associated with stress and burnout.
-
-> **`Hypothesis 2:`** Job characteristics appraised as challenge demands will be positively associated with engagement, and negatively associated with stress and burnout.
-
-> **`Hypothesis 3:`** Job characteristics appraised as hindrance demands will be negatively associated with engagement, and positively associated with stress and burnout.
-
-# Methods
-We evaluated associations between the antecedents and proximal outcomes of the Job Demands-Resources model [@bakker2017job; @bakker2003dual; @demerouti2001job], within the unifying framework of O\*Net. Specifically, focusing on the relationship between job characteristics and employee levels of job engagement, stress, and burnout. Our sample consists of 568 Prolific Panel participants.
-
-We examined job characteristics based on O\*Net's subcategories under work activity and work context. Burnout  and stress ) were measured using the Copenhagen Psychosocial Questionnaire [@burr_third_2019], and an overall engagement score was measured using an 18-item measure
-
 # Results
-The average perception that an O\*Net job element could be considered a resource was 3.77 with a standard deviation of 0.48. That it could be considered a challenge was 3.75 with a standard deviation of 0.50. Lastly, the average perception that it could be considered a hindrance was 2.39 with a standard deviation of 0.78.
 
-
-**Figure 1.** *Distributions of focal variables of interest*
-
-The figure in the center shows the relationships among resource dimensions (O*Net categories) as well as the three focal outcome variables. Regression analyses reveal that the more a work characteristic is perceived as a resource, the more engaged is the respondent ($R^2$ = .15, $F_{(7, 528)}$ = 12.82, $p$ < .001). Figure 2 shows the relationships among challenge demands and the three focal outcome variables. The impact of challenge demands on engagement was similar in direction and magnitude to that of resources ($R^2$ = .13, $F_{(7, 528)}$ = 11.03, $p$ < .001), with null effects for both stress ($R^2$= .01, $F_{(7, 528)}$ = 0.88, $p$ = .520) and burnout ($R^2$ = .02, $F_{(7, 528)}$ = 1.21, $p$ = .295). Figure 3 shows the relationships among hindrance demands and the three focal outcome variables. Regression analyses revealed a marginal association between a work characteristic perceived as a hindrance and lower levels of engagement ($R^2$ = .07, $F_{(7, 528)}$ = 5.84, $p$ < .001), with similar effects both between being viewed as a hindrance and increased stress ($R^2$ = .06, $F_{(7, 528)}$ = 4.88, $p$ < .001) and burnout ($R^2$ = .06, $F_{(7, 528)}$ = 4.90, $p$ < .001).
-
-
-
-**Figure 2.** *Challenge demand ratings (O\*Net characteristic category association).*
-
-
-
-**Figure 3.** *Hindrance demand ratings (O\*Net characteristic category association).*
 
 # Discussion 
-Largely aligning with the job-demands resources theory [@demerouti2001job], our results indicated that work characteristics perceived as resources were associated with greater engagement. Similarily,  characteristics perceived as challenge demands were associated with higher engagement. Further, job characteristics deemed hindrance demands were associated with lower engagement, higher stress, and greater burnout. 
 
-These results support prior research on the potential impact of challenge stressors on work outcomes [@cavanaugh2000empirical; @podsakoff2007differential]. Our results highlight the importance in noting the distinction between types of demands in future research and practice. Employers would benefit from understanding what work demands may be perceived as challenges, and leveraging them to increase desired work outcomes (e.g., engagement). 
+Large scale data, truly random sampling, and large range items could give comparable CTT item and person statistics across testing populations and occasions [@kulas2017approximate]. @fan1998item looked at the correlations between ability estimates and item difficulty in CTT and all three IRT models. These correlations were very high, generally between .80 and .90, showing a lot of overlap between the two methodologies. As for item discrimination, correlations were moderate to high, with only a few being very low. However, @kulas2017approximate provide an adjustment to @lord2012applications's formula giving the functional relationship between the "non-invariant" CTT and "invariant" IRT discrimination statistics.
 
-Future study could explore job characteristics at a more granular/individual level. Next, our study was limited to three outcomes of interest. A fruitful direction for future study would be consideration of additional outcomes (e.g., job satisfaction) as well. It would also be of interest to consider moderators of these relationships (e.g., industry type, personality). 
 
 ```{r, include=FALSE}
-knitr::write_bib(c('knitr','rmarkdown','posterdown','pagedown'), 'packages.bib')
+knitr::write_bib(c('knitr','rmarkdown','posterdown','pagedown', 'mirt'), 'packages.bib')
 ```
 
-```{r img-with-knitr, echo=FALSE, fig.align='right', out.width='25%'}
+```{r img-with-knitr, echo=FALSE, fig.align='right', out.width='100%'}
 
 knitr::include_graphics("2022_SIOP_Seattle_Web.png")
 
