@@ -21,7 +21,7 @@ title_textsize: "105pt"         ## https://githubhelp.com/brentthorne/posterdown
 #main_picwidth: "55%"           ## https://github.com/brentthorne/posterdown/wiki/posterdown_betterland
 main_findings: 
   - '![](iccs.svg){.main_pic}' # main_pic is used to center align {.main_pic}
-#  - '![](ChallPlot.svg){.main_pic}'
+  - '![](2022_SIOP_Seattle_Web.png){.new-img-top}'
 #  - '![](HinderPlot.svg){.main_pic}'
 logoleft_name: '![](https://www.montclair.edu/university-communications/wp-content/uploads/sites/144//2020/10/hawk-logo-color.svg){.new-img-left}'
 logoright_name: '![](https&#58;//raw.githubusercontent.com/brentthorne/posterdown/master/images/betterhexlogo.png){.main-img-right}'
@@ -34,7 +34,7 @@ output:
     posterdown::posterdown_betterland:
     self_contained: false
 bibliography: ["articles.bib", "packages.bib"]
-suppress-bibliography: true 
+suppress-bibliography: false 
 ---
 
 ```{r setup, include=FALSE}
@@ -67,20 +67,20 @@ knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE)
   height: 800px;
 }
 
+.new-img-top {
+  position: absolute;
+  bottom: 4000px;
+  left: 1000px;
+  width: 1200px;           /* Play with width and height specifications if image stretches*/
+  height: 700px;
+}
+
 .new-img-left {
   position: absolute;
   bottom: 100px;
-  left: 100px;
-  width: 1200px;           /* Play with width and height specifications if image stretches*/
-  height: 1000px;
-}
-
-.new-img-top {
-  position: absolute;
-  top: 100px;
-  left: 100px;
+  left: 150px;
   width: 1200px;           
-  height: 100px;
+  height: 700px;
 }
 
 p.caption {
@@ -93,7 +93,7 @@ p.caption {
 
 Item characteristic curves are frequently referenced by psychometricians as visual indicators of important attributes of assessment items - most frequently *difficulty* and *discrimination*. Assessment specialists who examine ICC's usually do so from within the psychometric framework of either Item Response Theory (IRT) or Rasch modeling. These frameworks provide the parameters necessary to plot the ogive functions.  If the curve transitions from low to high likelihood at a location toward the lower end of the trait (e.g., "left" on the plotting surface), this indicates that it is relatively easy to answer the item correctly. If the curve is sharp (e.g., strongly vertical), this indicates high discrimination; if it is flatter, that is an indication of poorer discrimination - see Figure \@ref(fig:example)).
 
-```{r example, include=TRUE, fig.cap="Item characteristic curves primarily reflecting differences in discrimination.", echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%"}
+```{r example, include=TRUE, fig.cap="Item characteristic curves reflecting visual differences in difficulty and discrimination.", echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%"}
 
 
 data<-read.csv("simulated_data.csv", header=FALSE)
@@ -110,20 +110,34 @@ ahat<-function(x){
 pseudoa<-ahat(.3)
 c <- 0
 #change pseudob in this line for a scale that allows negative numbers
-pseudob<-abs(qnorm(.2))
-pseudoa<-ahat(.2)
+
+pseudob  <-       qnorm(.02)   ## note these "p-values" operate in reverse
+pseudoa  <-        ahat(.3)
+
+pseudob2  <-  abs(qnorm(.5))
+pseudoa2  <-       ahat(.7)
+
+pseudob3  <-      qnorm(.99)
+pseudoa3  <-       ahat(.7)
+
+pseudob4  <-  abs(qnorm(.5))
+pseudoa4  <-       ahat(.1)
+
+colors.orig<-c("Moderate Discrimination & Low Difficulty"="cyan", 
+          "High Discrimination & Moderate Difficulty"="cyan3", 
+          "High Discrimination & High Difficulty"="brown1", 
+          "Low Discrimination & Moderate Difficulty"="brown3")
+
+colors<-c("Moderate Discrimination & Low Difficulty"="#ffbaba", 
+          "High Discrimination & Moderate Difficulty"="#ff5252", 
+          "High Discrimination & High Difficulty"="#a70000", 
+          "Low Discrimination & Moderate Difficulty"="#ff0000")
+
 p <- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(pseudoa*(x-pseudob))))))}
-pseudob2<-abs(qnorm(.5))
-pseudoa2<-ahat(.7)
 p2 <- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(pseudoa2*(x-pseudob2))))))}
-pseudob3<-abs(qnorm(.02))
-pseudoa3<-ahat(0.7)
 p3 <- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(pseudoa3*(x-pseudob3))))))}
-pseudob4<-abs(qnorm(.001))
-pseudoa4<-ahat(0.2)
 p4<- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(pseudoa4*(x-pseudob4))))))}
 
-colors<-c("High Discrimination & Low Difficulty"="cyan", "Low Discrimination & Low Difficulty"="cyan3", "Low Discrimination & High Difficulty"="brown1", "High Discrimination & High Difficulty"="brown3")
 library(ggplot2)
 library(scales)
 base <-
@@ -132,12 +146,12 @@ base <-
 
 base+
   xlim(-3,3)+
-  geom_function(fun=p, size=3, linetype="dashed", aes(color="High Discrimination & Low Difficulty"))+
-  geom_function(fun=p2, size=3, aes(color="Low Discrimination & Low Difficulty"))+
-  geom_function(fun=p3, size=3, aes(color="Low Discrimination & High Difficulty"))+
-  geom_function(fun=p4, size=3, linetype="dashed", aes(color="High Discrimination & High Difficulty"))+
+  geom_function(fun=p, size=1.5, linetype="twodash", aes(color="Moderate Discrimination & Low Difficulty"))+
+  geom_function(fun=p2, size=2, aes(color="High Discrimination & Moderate Difficulty"))+
+  geom_function(fun=p3, size=2, aes(color="High Discrimination & High Difficulty"))+
+  geom_function(fun=p4, size=1.5, linetype="twodash", aes(color="Low Discrimination & Moderate Difficulty"))+
   labs(x="Thetas",
-       y="p(x)",
+       y="p(1.0)",
        color="Legend")+
   scale_color_manual(values=colors)+
   theme(legend.position="bottom")+
@@ -330,12 +344,12 @@ text(2.7,0.4, "Item 24",col="black")
 
 Large scale data, truly random sampling, and large range items could give comparable CTT item and person statistics across testing populations and occasions [@kulas2017approximate]. @fan1998item looked at the correlations between ability estimates and item difficulty in CTT and all three IRT models. These correlations were very high, generally between .80 and .90, showing a lot of overlap between the two methodologies. As for item discrimination, correlations were moderate to high, with only a few being very low. However, @kulas2017approximate provide an adjustment to @lord2012applications's formula giving the functional relationship between the "non-invariant" CTT and "invariant" IRT discrimination statistics.
 
-
+# References
 ```{r, include=FALSE}
 knitr::write_bib(c('knitr','rmarkdown','posterdown','pagedown', 'mirt'), 'packages.bib')
 ```
 
-```{r img-with-knitr, echo=FALSE, fig.align='right', out.width='100%'}
+```{r img-with-knitr, echo=FALSE, fig.align='right', out.width='70%', eval=FALSE}
 
 knitr::include_graphics("2022_SIOP_Seattle_Web.png")
 
