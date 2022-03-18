@@ -295,7 +295,7 @@ dev.off()
 
 
 # Results
-Visual ICC's generated from the 2PL are presented in Figure \@ref(fig:IRT), with CTT-derived ICC's of the same items being represented in Figure \@ref(fig:CTT). The area between CTT-derived and IRT-derived ICC's (aka differential item functioning; "DIF") was calculated via the `geiger` pakcage [@R-geiger]. The average plotting-space deviation for all 100 curves was 0.35 (*s* = .23). These differences were skewed (positively), reflecting that *most* of the DIF estimates were less than 0.35. Curves using both methodologies are very similar in shape and form, as we can see in the two items that we point out in each figure as well as three example items presented in the middle figure.
+Visual ICC's generated from the CTT-parameters are being represented in Figure \@ref(fig:CTT), with the IRT- 2PL derived ICC's of the same items being represented in Figure \@ref(fig:IRT). The area between CTT-derived and IRT-derived ICC's (aka differential item functioning; "DIF") was calculated via the `geiger` package [@R-geiger]. The average plotting-space deviation for all 100 curves was 0.35 (*s* = .23). These differences were skewed (positively), reflecting that *most* of the DIF estimates were less than 0.35. Curves using both methodologies are very similar in shape and form, as we can see in the two items that we point out in each figure as well as three example items presented in the middle figure.
 
 ```{r CTT, echo=FALSE, message=FALSE, warning=FALSE, results="hide", fig.cap="ICCs derived from only CTT parameters (with two noteworthy ICCs annotated).", out.width="90%", fig.align="center"}
 
