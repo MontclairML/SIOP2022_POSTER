@@ -30,15 +30,22 @@ csl: "apa7.csl"
 body_textsize: "48px"
 poster_height: "50in"
 poster_width: "70in"
+header_includes: 
+  - \usepackage{amsmath}
 output: 
     posterdown::posterdown_betterland:
-    self_contained: false
+    self_contained: true
+knit: pagedown::chrome_print
 bibliography: ["articles.bib", "packages.bib"]
 suppress-bibliography: false 
+link-citations: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE)
+
+knitr::write_bib(c('knitr','rmarkdown','posterdown','pagedown', 'mirt', 'geiger'), 'packages.bib')
+
 ```
 
 ```{css, echo=FALSE}
@@ -62,7 +69,7 @@ knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE)
 .new-img-right {
   position: absolute;
   bottom: 100px;
-  right: 150px;
+  right: 200px;
   width: 1500px;           /* Play with width and height specifications if image stretches*/
   height: 800px;
 }
@@ -70,8 +77,8 @@ knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE)
 .new-img-top {
   position: absolute;
   bottom: 4000px;
-  left: 1000px;
-  width: 1200px;           /* Play with width and height specifications if image stretches*/
+  left: 1050px;
+  width: 1300px;           /* Play with width and height specifications if image stretches*/
   height: 700px;
 }
 
@@ -80,7 +87,7 @@ knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE)
   bottom: 100px;
   left: 150px;
   width: 1200px;           
-  height: 700px;
+  height: 900px;
 }
 
 p.caption {
@@ -91,9 +98,9 @@ p.caption {
 
 # Introduction
 
-Item characteristic curves are frequently referenced by psychometricians as visual indicators of important attributes of assessment items - most frequently *difficulty* and *discrimination*. Assessment specialists who examine ICC's usually do so from within the psychometric framework of either Item Response Theory (IRT) or Rasch modeling. These frameworks provide the parameters necessary to plot the ogive functions.  If the curve transitions from low to high likelihood at a location toward the lower end of the trait (e.g., "left" on the plotting surface), this indicates that it is relatively easy to answer the item correctly. If the curve is sharp (e.g., strongly vertical), this indicates high discrimination; if it is flatter, that is an indication of poorer discrimination - see Figure \@ref(fig:example)).
+Item characteristic curves are frequently referenced by psychometricians as visual indicators of important attributes of assessment items - most frequently *difficulty* and *discrimination*. Assessment specialists who examine ICC's usually do so from within the psychometric framework of either Item Response Theory (IRT) or Rasch modeling. These frameworks provide the parameters necessary to plot the ogive functions.  If the curve transitions from low to high likelihood of correct response at a location toward the lower end of the trait (e.g., "left" on the plotting surface), this indicates that it is relatively easy to answer the item correctly. If the curve is sharp (e.g., strongly vertical), this indicates high discrimination; if it is flatter, that is an indication of poorer discrimination - see Figure \@ref(fig:example).
 
-```{r example, include=TRUE, fig.cap="Item characteristic curves reflecting visual differences in difficulty and discrimination.", echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%"}
+```{r example, include=TRUE, fig.cap="Item characteristic curves reflecting visual differences in difficulty and discrimination.", echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%", out.height="80%"}
 
 
 data<-read.csv("simulated_data.csv", header=FALSE)
@@ -150,7 +157,7 @@ base+
   geom_function(fun=p2, size=2, aes(color="High Discrimination & Moderate Difficulty"))+
   geom_function(fun=p3, size=2, aes(color="High Discrimination & High Difficulty"))+
   geom_function(fun=p4, size=1.5, linetype="twodash", aes(color="Low Discrimination & Moderate Difficulty"))+
-  labs(x="Thetas",
+  labs(x="Theta",
        y="p(1.0)",
        color="Legend")+
   scale_color_manual(values=colors)+
@@ -169,20 +176,23 @@ base+
 
 ```
 
-From a Classical Test Theory (CTT) orientation, item  difficulty is most commonly represented by the percent of individuals answering the item correctly (also referred to as a *p-value*). Item discrimination can be conveyed via a few different CTT indices, but the most commonly calculated and consulted index is the corrected item total correlation. 
+From a Classical Test Theory (CTT) orientation, item  difficulty is most commonly represented by the percent of individuals answering the item correctly (also referred to as a *p-value*). Item discrimination can be conveyed via a few different CTT indices, but the most commonly calculated and consulted index is the corrected item-total correlation. 
 
 # Method
 
-We simulated data using @han2007wingen software. Our sample was 10,000 observations, with a mean of 0 and a standard deviation of 1. The number of items were 100, with response categories of either correct or incorrect (1 and 0). The mean for the a-parameter for the simulated data was 2, and the standard deviation 0.8. The mean for the b-parameter was 0 and the standard deviation 0.5. The `mirt` package from @R-mirt was used to compute the IRT a-parameters and to plot the 2PL resulting model. As for the CTT-derived a-parameter, the modification to @lord2012applications's formula described below was used, as well as the re-scaling for the p-values.
-$$a_i\cong \frac{r_i}{\sqrt{1-r_i^2}}$$
-<center>
-&
-<center>
+We simulated 10,000 observations across 100 binary items via [WinGen](https://www.umass.edu/remp/software/simcata/wingen/) [@han2007wingen]. Because we wanted a range of universally **positive** item discrimination values to model, we specified a mean *a*-parameter value of 2 (*sd* = 0.8). The mean *b*-parameter value was set at 0 (*sd* = 0.5). Next, the `mirt` package [@R-mirt] was used to "re"-estimate the IRT via 2PL specification. As for the CTT-derived estimates, @lord2012applications provides a conceptual relationship between the IRT parameter and corrected item-total **biserial** correlation:
 
-$$\hat{a_i}\cong[(.51 + .02z_g + .3z_g^2)r]+[(.57 - .009z_g + .19z_g^2)\frac{e^r-e^{-r}}{e-e^r}]$$
+\begin{equation}
+a_i\cong \frac{r_i}{\sqrt{1-r_i^2}}
+\end{equation}
 
-We additionally changed the scale of the difficulty estimates of CTT so they were on the same scale as the IRT estimates. This was done by building a regression model using the CTT a-estimate to predict the IRT a-parameter. The resulting values from this model were used in plotting the CTT-derived ICC's.
+@kulas2017approximate, via simulation, provide a less elegant but residual minimizing amendment that: 1) utilizes the more common contemporary corrected item-total **point-biserial** correlation, and 2) captures the influence of item difficulty via specification of a *p-value* derivitive denoted as $z_g$:
 
+\begin{equation}
+\hat{a_i}\cong[(.51 + .02z_g + .3z_g^2)r]+[(.57 - .009z_g + .19z_g^2)\frac{e^r-e^{-r}}{e-e^r}]
+\end{equation}
+
+We additionally amended the metric of the CTT ability estimates (e.g., % correct) so this was more directly comparable to the IRT estimates. This was done by regression estimation with additional sets of simulated data - specifically we regressed *b*-parameters onto $z_g$ indices, and used the average slope and intercept to rescale *p-values* on a psuedo-$\theta$ scale for graphing purposes. 
 
 ```{r data, message=FALSE, warning=FALSE, results="hide"}
 data<-read.csv("simulated_data.csv", header=FALSE)
@@ -273,8 +283,8 @@ base+
   geom_function(fun=eq_CTT3, size=1, aes(color="CTT"))+
   geom_function(fun=eq_IRT3, size=3, color="black")+
   geom_function(fun=eq_IRT3, size=1, aes(color="IRT"))+
-  labs(x="Thetas",
-       y="p(x)",
+  labs(x="Theta",
+       y="p(1.0)",
        color="Legend")+
   scale_color_manual(values=colors)
 
@@ -285,10 +295,10 @@ dev.off()
 
 
 # Results
-The area between ICC's was calculated between CTT-derived and IRT-derived ICC's. The average difference for all 100 curves was 0.35. Most of the data is skewed towards the lower end, indicating that out of the 100 items, most of them have areas between the curves of less than 0.35. 
-For Figure 2 we plotted all the 100 ICC's that use CTT parameters, and for Figure 3 we did the same but with IRT parameters instead. Curves using both methodologies are very similar in shape and form, as we can see in the two items that we point out in each figure.
+Visual ICC's generated from the 2PL are presented in Figure \@ref(fig:IRT), with CTT-derived ICC's of the same items being represented in Figure \@ref(fig:CTT). The area between CTT-derived and IRT-derived ICC's (aka differential item functioning; "DIF") was calculated via the `geiger` pakcage [@R-geiger]. The average plotting-space deviation for all 100 curves was 0.35 (*s* = .23). These differences were skewed (positively), reflecting that *most* of the DIF estimates were less than 0.35. Curves using both methodologies are very similar in shape and form, as we can see in the two items that we point out in each figure as well as three example items presented in the middle figure.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, results="hide", fig.cap="ICCs derived from only CTT parameters (with two noteworthy ICCs annotated).", out.width="100%"}
+```{r CTT, echo=FALSE, message=FALSE, warning=FALSE, results="hide", fig.cap="ICCs derived from only CTT parameters (with two noteworthy ICCs annotated).", out.width="90%", fig.align="center"}
+
 theta <- matrix(seq(-6,6, by=.1))
 p_ctt<-0
 p_irt<-0
@@ -311,15 +321,9 @@ text(3.7,0.85, "Item 4",col="purple")
 arrows(2,0.4,1.5,0.4,col="black")
 text(2.7,0.4, "Item 24",col="black")
 
-
-
-
 ```
 
-
-
-
-```{r echo=FALSE, message=FALSE, warning=FALSE, results="hide", fig.cap="Typical ICCs derived from IRT parameters (same noteworthy items annotated).", out.width="100%"}
+```{r IRT, echo=FALSE, message=FALSE, warning=FALSE, results="hide", fig.cap="ICCs derived from IRT parameters (same noteworthy items annotated).", out.width="90%", fig.align="center"}
 
 eq_IRT<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[1]*(x-df$b[1]))))))}
 p_irt<-curve(eq_IRT, xlim=c(-4,4), xlab="Level of Trait", ylab="p(x)")
@@ -339,18 +343,8 @@ text(2.7,0.4, "Item 24",col="black")
 ```
 
 
-
 # Discussion 
 
-Large scale data, truly random sampling, and large range items could give comparable CTT item and person statistics across testing populations and occasions [@kulas2017approximate]. @fan1998item looked at the correlations between ability estimates and item difficulty in CTT and all three IRT models. These correlations were very high, generally between .80 and .90, showing a lot of overlap between the two methodologies. As for item discrimination, correlations were moderate to high, with only a few being very low. However, @kulas2017approximate provide an adjustment to @lord2012applications's formula giving the functional relationship between the "non-invariant" CTT and "invariant" IRT discrimination statistics.
+Although invariance is a property historically associated exclusively for IRT applications, large scale data, truly random sampling, and large range items can also yield stable CTT item and person statistics [@fan1998item; @kulas2017approximate]. The current investigation is proof-of-concept that visual representations of CTT-derived item characteristics are feasible. We are currently working to extend our simulations and also finalize an `R` package that generates these CTT-derived ICCs. This poster was crafted via `posterdown` [@R-posterdown].
 
 # References
-```{r, include=FALSE}
-knitr::write_bib(c('knitr','rmarkdown','posterdown','pagedown', 'mirt'), 'packages.bib')
-```
-
-```{r img-with-knitr, echo=FALSE, fig.align='right', out.width='70%', eval=FALSE}
-
-knitr::include_graphics("2022_SIOP_Seattle_Web.png")
-
-```
