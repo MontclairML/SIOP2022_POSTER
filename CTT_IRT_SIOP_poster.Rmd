@@ -35,7 +35,7 @@ header_includes:
 output: 
     posterdown::posterdown_betterland:
     self_contained: true
-knit: pagedown::chrome_print
+#knit: pagedown::chrome_print
 bibliography: ["articles.bib", "packages.bib"]
 suppress-bibliography: false 
 link-citations: true
