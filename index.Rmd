@@ -34,8 +34,8 @@ header_includes:
   - \usepackage{amsmath}
 output: 
     posterdown::posterdown_betterland:
-    self_contained: true
-#knit: pagedown::chrome_print
+    self_contained: false
+knit: pagedown::chrome_print
 bibliography: ["articles.bib", "packages.bib"]
 suppress-bibliography: false 
 link-citations: true
