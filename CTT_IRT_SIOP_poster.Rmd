@@ -304,7 +304,7 @@ p_ctt<-0
 p_irt<-0
 colors<-rep(c("Red", "blue","yellow","orange","purple","brown","green","pink","black", "white"), 10)
 eq_CTT<- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$PseudoA[1]*(x-df$PseudoB[1]))))))}
-p_ctt<-curve(eq_CTT, xlim=c(-4,4), xlab="Level of Trait", ylab="p(x)")
+p_ctt<-curve(eq_CTT, xlim=c(-4,4), xlab="Pseudo-theta", ylab="p(x)")
 auc<-rep(NA, nrow(df))
 for (i in 1:nrow(df)){
   eq_CTT<- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$PseudoA[i]*(x-df$PseudoB[i]))))))}
@@ -326,7 +326,7 @@ text(2.7,0.4, "Item 24",col="black")
 ```{r IRT, echo=FALSE, message=FALSE, warning=FALSE, results="hide", fig.cap="ICCs derived from IRT parameters (same noteworthy items annotated).", out.width="90%", fig.align="center"}
 
 eq_IRT<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[1]*(x-df$b[1]))))))}
-p_irt<-curve(eq_IRT, xlim=c(-4,4), xlab="Level of Trait", ylab="p(x)")
+p_irt<-curve(eq_IRT, xlim=c(-4,4), xlab="Theta", ylab="p(x)")
 
 for (i in 1:nrow(df)){
     eq_IRT<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[i]*(x-df$b[i]))))))}
