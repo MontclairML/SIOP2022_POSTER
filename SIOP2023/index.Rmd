@@ -1,0 +1,350 @@
+---
+title: 'Item Characteristic Curves generated from common CTT Item Statistics'
+author:
+  - name: Diego Figueiras
+    affil: 1
+  - name: John Kulas
+    affil: 1
+affiliation:
+  - num: 1
+    address: Montclair State University
+primary_colour: "#640d14"      ## https://coolors.co/250902-38040e-640d14-800e13-ad2831
+secondary_colour: "#ad2831"
+accent_colour: "#38040e"
+sectitle_bgcol: "#640d14"
+authorextra_textsize: "70px"
+affiliation_textsize: "50px"
+reference_textsize: "40px"
+caption_textsize: "40pt"
+column_numbers: 3
+title_textsize: "105pt"         ## https://githubhelp.com/brentthorne/posterdown
+#main_picwidth: "55%"           ## https://github.com/brentthorne/posterdown/wiki/posterdown_betterland
+main_findings: 
+  - '![](iccs.svg){.main_pic}' # main_pic is used to center align {.main_pic}
+  - '![](2022_SIOP_Seattle_Web.png){.new-img-top}'
+#  - '![](HinderPlot.svg){.main_pic}'
+logoleft_name: '![](https://www.montclair.edu/university-communications/wp-content/uploads/sites/144//2020/10/hawk-logo-color.svg){.new-img-left}'
+logoright_name: '![](https&#58;//raw.githubusercontent.com/brentthorne/posterdown/master/images/betterhexlogo.png){.main-img-right}'
+main_width: 0.3	
+csl: "apa7.csl"
+body_textsize: "48px"
+poster_height: "50in"
+poster_width: "70in"
+header_includes: 
+  - \usepackage{amsmath}
+output: 
+    posterdown::posterdown_betterland:
+    self_contained: false
+knit: pagedown::chrome_print
+bibliography: ["articles.bib", "packages.bib"]
+suppress-bibliography: false 
+link-citations: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, message=FALSE)
+
+knitr::write_bib(c('knitr','rmarkdown','posterdown','pagedown', 'mirt', 'geiger'), 'packages.bib')
+
+```
+
+```{css, echo=FALSE}
+
+.main_pic{
+  border: 50%;
+  width: 90%;
+  vertical-align: top;
+}
+
+.main_pic_circle {
+  border-radius: 50%;
+  width: 90%;
+  vertical-align: top;
+}
+
+.main-img-right {
+  width: 100%;
+}
+
+.new-img-right {
+  position: absolute;
+  bottom: 100px;
+  right: 200px;
+  width: 1500px;           /* Play with width and height specifications if image stretches*/
+  height: 800px;
+}
+
+.new-img-top {
+  position: absolute;
+  bottom: 4000px;
+  left: 1050px;
+  width: 1300px;           /* Play with width and height specifications if image stretches*/
+  height: 700px;
+}
+
+.new-img-left {
+  position: absolute;
+  bottom: 100px;
+  left: 150px;
+  width: 1200px;           
+  height: 900px;
+}
+
+p.caption {
+  font-size: 1em;         /* This sets figure caption font size */
+}
+
+```
+
+# Introduction
+
+Item characteristic curves are frequently referenced by psychometricians as visual indicators of important attributes of assessment items - most frequently *difficulty* and *discrimination*. Assessment specialists who examine ICC's usually do so from within the psychometric framework of either Item Response Theory (IRT) or Rasch modeling. These frameworks provide the parameters necessary to plot the ogive functions.  If the curve transitions from low to high likelihood of correct response at a location toward the lower end of the trait (e.g., "left" on the plotting surface), this indicates that it is relatively easy to answer the item correctly. If the curve is sharp (e.g., strongly vertical), this indicates high discrimination; if it is flatter, that is an indication of poorer discrimination - see Figure \@ref(fig:example).
+
+```{r example, include=TRUE, fig.cap="Item characteristic curves reflecting visual differences in difficulty and discrimination.", echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%", out.height="80%"}
+
+
+data<-read.csv("simulated_data.csv", header=FALSE)
+#data$v30<-abs(data$v30-1)
+library(mirt)
+library(latticeExtra)
+pseudob<-abs(qnorm(.5))
+
+ahat<-function(x){
+  r<-(((2.71828)^x)-(2.71828)^-x)/(2.71828-(2.71828)^x)
+  ((0.51+(0.02*pseudob)+(0.301*pseudob^2))*r)
+  
+}
+pseudoa<-ahat(.3)
+c <- 0
+#change pseudob in this line for a scale that allows negative numbers
+
+pseudob  <-       qnorm(.02)   ## note these "p-values" operate in reverse
+pseudoa  <-        ahat(.3)
+
+pseudob2  <-  abs(qnorm(.5))
+pseudoa2  <-       ahat(.7)
+
+pseudob3  <-      qnorm(.99)
+pseudoa3  <-       ahat(.7)
+
+pseudob4  <-  abs(qnorm(.5))
+pseudoa4  <-       ahat(.1)
+
+colors.orig<-c("Moderate Discrimination & Low Difficulty"="cyan", 
+          "High Discrimination & Moderate Difficulty"="cyan3", 
+          "High Discrimination & High Difficulty"="brown1", 
+          "Low Discrimination & Moderate Difficulty"="brown3")
+
+colors<-c("Moderate Discrimination & Low Difficulty"="#ffbaba", 
+          "High Discrimination & Moderate Difficulty"="#ff5252", 
+          "High Discrimination & High Difficulty"="#a70000", 
+          "Low Discrimination & Moderate Difficulty"="#ff0000")
+
+p <- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(pseudoa*(x-pseudob))))))}
+p2 <- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(pseudoa2*(x-pseudob2))))))}
+p3 <- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(pseudoa3*(x-pseudob3))))))}
+p4<- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(pseudoa4*(x-pseudob4))))))}
+
+library(ggplot2)
+library(scales)
+base <-
+  ggplot()
+
+
+base+
+  xlim(-3,3)+
+  geom_function(fun=p, size=1.5, linetype="twodash", aes(color="Moderate Discrimination & Low Difficulty"))+
+  geom_function(fun=p2, size=2, aes(color="High Discrimination & Moderate Difficulty"))+
+  geom_function(fun=p3, size=2, aes(color="High Discrimination & High Difficulty"))+
+  geom_function(fun=p4, size=1.5, linetype="twodash", aes(color="Low Discrimination & Moderate Difficulty"))+
+  labs(x="Theta",
+       y="p(1.0)",
+       color="Legend")+
+  scale_color_manual(values=colors)+
+  theme(legend.position="bottom")+
+  guides(colour = guide_legend(nrow = 2))
+
+# 
+# curve(p, from=-5, to=5, ylim=c(0, 1),  col = "#F72119", lwd = 5) #, main="Item Characteristic Curves", xlab="Level of Trait")
+# pseudob<-abs(qnorm(.2))
+# pseudoa<-ahat(.7)
+# curve(p, lty="longdash", add=TRUE, col = "#665AEA", lwd = 5)
+# arrows(-3,0.4,-1.5,0.4,col="#F72119")
+# text(-3.8,0.4, "Low \n Discrimination",col="#F72119")
+# arrows(2,0.2,0.45,0.2,col="#665AEA")
+# text(3,0.2, "High \n Discrimination",col="#665AEA")
+
+```
+
+From a Classical Test Theory (CTT) orientation, item  difficulty is most commonly represented by the percent of individuals answering the item correctly (also referred to as a *p-value*). Item discrimination can be conveyed via a few different CTT indices, but the most commonly calculated and consulted index is the corrected item-total correlation. 
+
+# Method
+
+We simulated 10,000 observations across 100 binary items via [WinGen](https://www.umass.edu/remp/software/simcata/wingen/) [@han2007wingen]. Because we wanted a range of universally **positive** item discrimination values to model, we specified a mean *a*-parameter value of 2 (*sd* = 0.8). The mean *b*-parameter value was set at 0 (*sd* = 0.5). Next, the `mirt` package [@R-mirt] was used to "re"-estimate the IRT via 2PL specification. As for the CTT-derived estimates, @lord2012applications provides a conceptual relationship between the IRT parameter and corrected item-total **biserial** correlation:
+
+\begin{equation}
+a_i\cong \frac{r_i}{\sqrt{1-r_i^2}}
+\end{equation}
+
+@kulas2017approximate, via simulation, provide a less elegant but residual minimizing amendment that: 1) utilizes the more common contemporary corrected item-total **point-biserial** correlation, and 2) captures the influence of item difficulty via specification of a *p-value* derivitive denoted as $z_g$:
+
+\begin{equation}
+\hat{a_i}\cong[(.51 + .02z_g + .3z_g^2)r]+[(.57 - .009z_g + .19z_g^2)\frac{e^r-e^{-r}}{e-e^r}]
+\end{equation}
+
+We additionally amended the metric of the CTT ability estimates (e.g., % correct) so this was more directly comparable to the IRT estimates. This was done by regression estimation with additional sets of simulated data - specifically we regressed *b*-parameters onto $z_g$ indices, and used the average slope and intercept to rescale *p-values* on a psuedo-$\theta$ scale for graphing purposes. 
+
+```{r data, message=FALSE, warning=FALSE, results="hide"}
+data<-read.csv("simulated_data.csv", header=FALSE)
+pseudob<-abs(qnorm(.5))
+#data$v30<-abs(data$v30-1)
+library(mirt)
+library(latticeExtra)
+library(irtplay)
+library(psych)
+library(tidyverse)
+c<-0
+ahat<-function(x){
+  r<-(((2.71828)^x)-(1/(2.71828)^x))/(2.71828-(2.71828)^x)
+  
+  ((0.51+(0.02*pseudob)+(0.301*pseudob^2))*r)+((0.57-(0.009*pseudob)+(0.19*pseudob^2))*r)
+  
+}
+
+mod<-mirt(data, 1, itemtype="2PL")
+#plot(mod, type="trace")
+# 
+alphas<-psych::alpha(data)
+citcs<-data.frame(alphas$item.stats$r.drop)
+pseudoA<-data.frame(ahat(citcs))
+pseudoB<-data.frame(qnorm(colMeans(data)))
+IRT_parms <- coef(mod, IRTpars = TRUE, simplify = TRUE)
+irt <- IRT_parms$items
+df<-as.data.frame(cbind(citcs, pseudoA, pseudoB, irt))
+colnames(df)<-c("CITC", "PseudoA", "PseudoB", "a", "b", "c1", "c2")
+
+# plot(df$PseudoA, df$a)
+# plot(df$b, df$PseudoB)
+
+lm.reg<-lm(b ~PseudoB, data=df)
+ 
+
+b<-0.01479-(-1.33142*pseudoB) 
+dat<-data.frame(b, alphas$item.stats$r.drop)
+colnames(dat)<-c("b", "corrected item totals")
+par(cex.axis=1, cex.lab=1, cex.main=2, cex.sub=0.1)
+
+citcs<-data.frame(alphas$item.stats$r.drop)
+pseudoA<-data.frame(ahat(citcs))
+pseudoB<-b
+IRT_parms <- coef(mod, IRTpars = TRUE, simplify = TRUE)
+irt <- IRT_parms$items
+df<-as.data.frame(cbind(citcs, pseudoA, pseudoB, irt))
+colnames(df)<-c("CITC", "PseudoA", "PseudoB", "a", "b", "c1", "c2")
+
+```
+
+
+```{r ResourPlot, warning=FALSE, results="hide"}
+
+svg("iccs.svg")
+p_ctt<-0
+p_irt<-0
+
+
+eq_CTT<- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$PseudoA[1]*(x-df$PseudoB[1]))))))}
+eq_IRT<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[1]*(x-df$b[1]))))))}
+
+
+eq_CTT2<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$PseudoA[60]*((x+1)-df$PseudoB[60]))))))}
+eq_IRT2<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[60]*((x+1)-df$b[60]))))))}
+
+eq_CTT3<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$PseudoA[26]*((x-3)-df$PseudoB[26]))))))}
+eq_IRT3<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[26]*((x-3)-df$b[26]))))))}
+
+
+
+colors<-c("CTT"="cyan", "IRT"="#F72119")
+base <-
+  ggplot()
+
+
+base+
+  xlim(-2,5)+
+  geom_function(fun=eq_CTT, size=3, color="black")+
+  geom_function(fun=eq_CTT, size=1, aes(color="CTT", size=0.5))+
+  geom_function(fun=eq_IRT, size=3, color="black")+
+  geom_function(fun=eq_IRT, size=1, aes(color="IRT"))+
+  geom_function(fun=eq_CTT2, size=3, color="black")+
+  geom_function(fun=eq_CTT2, size=1, aes(color="CTT"))+
+  geom_function(fun=eq_IRT2, size=3, color="black")+
+  geom_function(fun=eq_IRT2, size=1, aes(color="IRT"))+
+  geom_function(fun=eq_CTT3, size=3, color="black")+
+  geom_function(fun=eq_CTT3, size=1, aes(color="CTT"))+
+  geom_function(fun=eq_IRT3, size=3, color="black")+
+  geom_function(fun=eq_IRT3, size=1, aes(color="IRT"))+
+  labs(x="Theta",
+       y="p(1.0)",
+       color="Legend")+
+  scale_color_manual(values=colors)
+
+
+dev.off()
+
+```
+
+
+# Results
+Visual ICC's generated from the CTT-parameters are being represented in Figure \@ref(fig:CTT), with the IRT- 2PL derived ICC's of the same items being represented in Figure \@ref(fig:IRT). The area between CTT-derived and IRT-derived ICC's (aka differential item functioning; "DIF") was calculated via the `geiger` package [@R-geiger]. The average plotting-space deviation for all 100 curves was 0.35 (*s* = .23). These differences were skewed (positively), reflecting that *most* of the DIF estimates were less than 0.35. Curves using both methodologies are very similar in shape and form, as we can see in the two items that we point out in each figure as well as three example items presented in the middle figure.
+
+```{r CTT, echo=FALSE, message=FALSE, warning=FALSE, results="hide", fig.cap="ICCs derived from only CTT parameters (with two noteworthy ICCs annotated).", out.width="90%", fig.align="center"}
+
+theta <- matrix(seq(-6,6, by=.1))
+p_ctt<-0
+p_irt<-0
+colors<-rep(c("Red", "blue","yellow","orange","purple","brown","green","pink","black", "white"), 10)
+eq_CTT<- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$PseudoA[1]*(x-df$PseudoB[1]))))))}
+p_ctt<-curve(eq_CTT, xlim=c(-4,4), xlab="Pseudo-theta", ylab="p(x)")
+auc<-rep(NA, nrow(df))
+for (i in 1:nrow(df)){
+  eq_CTT<- function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$PseudoA[i]*(x-df$PseudoB[i]))))))}
+  p_ctt[i]<-curve(eq_CTT, col=colors[i], xlim=c(-4,4), add=TRUE)
+  
+  cttB<-eq_CTT(seq(-6,6, by=.1))
+  eq_IRT<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[i]*(x-df$b[i]))))))}
+  irtB<-eq_IRT(seq(-6,6, by=.1))
+  auc[i]<-abs(geiger:::.area.between.curves(theta, cttB, irtB))
+}
+p_ctt
+arrows(3.2,0.85,2.2,0.85,col="purple")
+text(3.7,0.85, "Item 4",col="purple")
+arrows(2,0.4,1.5,0.4,col="black")
+text(2.7,0.4, "Item 24",col="black")
+
+```
+
+```{r IRT, echo=FALSE, message=FALSE, warning=FALSE, results="hide", fig.cap="ICCs derived from IRT parameters (same noteworthy items annotated).", out.width="90%", fig.align="center"}
+
+eq_IRT<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[1]*(x-df$b[1]))))))}
+p_irt<-curve(eq_IRT, xlim=c(-4,4), xlab="Theta", ylab="p(x)")
+
+for (i in 1:nrow(df)){
+    eq_IRT<-function(x){c + ((1-c)*(1/(1+2.71828^(-1.7*(df$a[i]*(x-df$b[i]))))))}
+    p_irt[i]<-curve(eq_IRT, col=colors[i], xlim=c(-4,4), add=TRUE, xlab="Level of Trait", ylab="p(x)")
+}
+
+p_irt
+arrows(3,0.8,2,0.8,col="purple")
+text(3.7,0.8, "Item 4",col="purple")
+arrows(2,0.4,1.5,0.4,col="black")
+text(2.7,0.4, "Item 24",col="black")
+
+
+```
+
+
+# Discussion 
+
+Although invariance is a property historically associated exclusively for IRT applications, large scale data, truly random sampling, and large range items can also yield stable CTT item and person statistics [@fan1998item; @kulas2017approximate]. The current investigation is proof-of-concept that visual representations of CTT-derived item characteristics are feasible. We are currently working to extend our simulations and also finalize an `R` package that generates these CTT-derived ICCs. This poster was crafted via `posterdown` [@R-posterdown].
+
+# References
