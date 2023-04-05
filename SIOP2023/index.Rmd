@@ -25,14 +25,14 @@ main_findings:
   - '![](iccs.svg){.main_pic}' # main_pic is used to center align {.main_pic}
   - '![](https://www.siop.org/portals/84/Conference/2023/SIOP_Annual_Conference_2023_rgb_100ppi.png?ver=A30vhFpMOc5O9rvGEichoQ%3D%3D){.new-img-top}'
 #  - '![](HinderPlot.svg){.main_pic}'
-logotop_name: 
-logoleft_name: '![](https://www.montclair.edu/university-communications/wp-content/uploads/sites/144//2020/10/hawk-logo-color.svg){.new-img-left}'
+logocenter_name: '![](https://www.montclair.edu/university-communications/wp-content/uploads/sites/144//2020/10/hawk-logo-color.svg){.main-img-center}' 
+logoleft_name: '![](posterdown_logo.png){.main-img-left}'
 logoright_name: '![](drawing2.png){.main-img-right}'
-main_width: 0.3	
+main_width: 0.2	
 csl: "apa7.csl"
-body_textsize: "48px"
-poster_height: "50in"
-poster_width: "70in"
+body_textsize: "30px"
+poster_height: "36in"
+poster_width: "48in"
 header_includes: 
   - \usepackage{amsmath}
 output: 
@@ -69,28 +69,31 @@ knitr::write_bib(c('knitr','rmarkdown','posterdown','pagedown', 'mirt', 'geiger'
   width: 100%;
 }
 
+.main-img-left {
+  width: 100%;
+}
+
+.main-img-center {
+  position: fixed;
+  width: 100%; 
+  bottom: 10px;
+  right: 600px;
+}
+
 .new-img-right {
   position: absolute;
-  bottom: 100px;
-  right: 200px;
-  width: 1500px;           /* Play with width and height specifications if image stretches*/
-  height: 800px;
+  bottom: 10px;
+  right: 400px;
+  width: 700px;           /* Play with width and height specifications if image stretches*/
+  height: 300px;
 }
 
 .new-img-top {
   position: absolute;
-  bottom: 4000px;
-  left: 1050px;
-  width: 1300px;           /* Play with width and height specifications if image stretches*/
-  height: 700px;
-}
-
-.new-img-left {
-  position: absolute;
-  bottom: 100px;
-  left: 150px;
-  width: 1200px;           
-  height: 900px;
+  bottom: 2950px;
+  left: 500px;
+  width: 1200px;           /* Play with width and height specifications if image stretches*/
+  height: 500px;
 }
 
 p.caption {
@@ -186,7 +189,7 @@ We built six simulations of binary data, each with different shapes and p-values
 
 We regressed *b*-parameters onto $z_g$ indices of all simulations, and used the average slope and intercept to rescale *p-values* on a psuedo-$\theta$ scale for graphing purposes. 
 
-```{r simulatedgraphs, results="hide", fig.cap="Shape of prescribed distributions of *p*-values across Study 1 conditions.", fig.height=6, fig.width=16}
+```{r simulatedgraphs, results="hide", fig.cap="Shape of prescribed distributions of *p*-values across Study 1 conditions.", fig.height=6, fig.width=8}
 
 dparabola <- function(x){ifelse(x < 1 | x > 5, 0, (3/16)*(x-3)^2)}
 library(ggplot2)
@@ -240,7 +243,7 @@ pseudob<-abs(qnorm(.5))
 #data$v30<-abs(data$v30-1)
 library(mirt)
 library(latticeExtra)
-library(irtplay)
+#library(irtplay)
 library(psych)
 library(tidyverse)
 c<-0
@@ -285,7 +288,32 @@ colnames(df)<-c("CITC", "PseudoA", "PseudoB", "a", "b", "c1", "c2")
 ```
 
 
-```{r ResourPlot, warning=FALSE, results="hide"}
+
+```{r, anova}
+df_anova<-read.csv("coefficients.csv")
+aov_int<-aov(intercept~simulation, data=df_anova)
+summary(aov_int)
+f_Value_int<-summary(aov_int)[[1]][1,4]
+pvalue_int<-summary(aov_int)[[1]][1,5]
+
+aov_slo<-aov(slope~simulation, data=df_anova)
+summary(aov_slo)
+f_Value_slo<-summary(aov_slo)[[1]][1,4]
+pvalue_Slo<-summary(aov_slo)[[1]][1,5]
+library(tidyverse)
+mean_slope<-df_anova%>%group_by(simulation)%>%summarize(slope=mean(slope))
+
+library(effectsize)
+eta_squared(aov_slo, partial = FALSE)
+summary(aov_slo)
+```
+
+# Results
+The resulting regression coefficients for all 5 simulations was an average intercept of approximately 0 and an average slope of -1.53. *note: include the actual statistics Two different one-way ANOVAs were applied with a non-significant mean intercept across conditions (F=`r f_Value_int`; p=`r pvalue_int`) and a significant but small mean slope (F=`r f_Value_slo`; p=`r pvalue_Slo`). This indicates that our scaling was sample dependent, however the differences were minimal ($\eta^2=0.0003$), as can be seen in the central figure. In this graph we report the distribution of slopes for all 1,000 simulations per simulation condition. They are all centered at about -1.53, with very little deviance in terms of shape, kurtosis, or spread. There were 3383 cases removed from the overall 500000 simulated items due to extreme b-estimates.
+The area between ICC’s was calculated between CTT-derived and IRT-derived ICC’s. The average difference for all 100 curves was 0.214. As we can see in \@ref(fig:histrogram2), most of the data is skewed towards the lower end, indicating that out of the 100 items, most of them have areas between the curves of less than 0.21. This diff was computed after scaling our Zg using the coefficients estimated with our simulations. Without the regression coefficient modifier the average area under the curves were 0.80, as we can see in \@ref(fig:histrogram). We ran a test of significance between these two means. Our results are t(99) = 11.72, p < .001. 
+
+
+```{r ResourPlot, fig.cap="Histograms of slope and intercept distributions by different simulated conditions.", results="hide"}
 library(svglite)
 svglite("iccs.svg", width=8, height=8)
 coeficients<-read.csv("coefficients.csv")
@@ -314,36 +342,12 @@ dev.off()
 
 
 
-```{r, anova}
-df_anova<-read.csv("coefficients.csv")
-aov_int<-aov(intercept~simulation, data=df_anova)
-summary(aov_int)
-f_Value_int<-summary(aov_int)[[1]][1,4]
-
-
-aov_slo<-aov(slope~simulation, data=df_anova)
-summary(aov_slo)
-f_Value_slo<-summary(aov_slo)[[1]][1,4]
-pvalue_Slo<-summary(aov_slo)[[1]][1,5]
-library(tidyverse)
-mean_slope<-df_anova%>%group_by(simulation)%>%summarize(slope=mean(slope))
-
-library(effectsize)
-eta_squared(aov_slo, partial = FALSE)
-summary(aov_slo)
-```
-
-# Results
-The resulting regression coefficients for all 5 simulations was an average intercept of approximately 0 and an average slope of -1.53. *note: include the actual statistics Two different one-way ANOVAs were applied with a non-significant mean intercept across conditions (F=`r f_value_int`; p=`r pvalue_int`) and a significant but small mean slope (F=`r f_value_slo`; p=`r pvalue_Slo`). This indicates that our scaling was sample dependent, however the differences were minimal ($\eta^2=0.0003$), as can be seen in \@ref(fig:ResourPlot). In this graph we report the distribution of slopes for all 1,000 simulations per simulation condition. They are all centered at about -1.53, with very little deviance in terms of shape, kurtosis, or spread. There were 3383 cases removed from the overall 500000 simulated items due to extreme b-estimates.
-The area between ICC’s was calculated between CTT-derived and IRT-derived ICC’s. The average difference for all 100 curves was 0.214. As we can see in \@ref(fig:histogram2), most of the data is skewed towards the lower end, indicating that out of the 100 items, most of them have areas between the curves of less than 0.21. This diff was computed after scaling our Zg using the coefficients estimated with our simulations. Without the regression coefficient modifier the average area under the curves were 0.80, as we can see in \@ref(fig:histogram). We ran a test of significance between these two means. Our results are t(99) = 11.72, p < .001. 
-
-
-```{r plotting, results="hide", fig.cap="Four ICCs highlighting the difference between CTT and IRT-derivated ICCs at different levels of DIF.", fig.height=7, fig.width=15 }
+```{r plotting, results="hide", fig.cap="Four ICCs highlighting the difference between CTT and IRT-derivated ICCs at different levels of DIF.", fig.height=5, fig.width=8 }
 data<-read.csv("simulated_data.csv", header=FALSE)
 #data$v30<-abs(data$v30-1)
 library(mirt)
 library(latticeExtra)
-library(irtplay)
+#library(irtplay)
 ahat<-function(x){
   r<-(((2.71828)^x)-(1/(2.71828)^x))/(2.71828-(2.71828)^x)
   
@@ -423,7 +427,7 @@ grid.arrange(p2,p1,p3,p4, nrow=2, ncol=2)
 ##############################################################################
 ```
 
-```{r histrogram, results="hide", fig.height=6, fig.width=15}
+```{r histrogram, fig.cap="Histogram of Diffs between ICCs plotted using IRT-paramets VS ICCs plotted using CTT statistics using regression coeficients modifier", results="hide", fig.height=5, fig.width=8}
 #Area between curves
 #Preparing data
 library(geiger)
@@ -469,7 +473,7 @@ lines(xfit, yfit, col="red", lwd=2)
 ```
 
 
-```{r histrogram2, results="hide", fig.cap="Histogram of all areas between ICCs plotted using IRT parameters vs ICCs plotted using CTT parameters.", fig.height=6, fig.width=15}
+```{r histrogram2, results="hide", fig.cap="Histogram of all areas between ICCs plotted using IRT parameters vs ICCs plotted using CTT parameters.", fig.height=5, fig.width=8}
 ### Cross-validating with wingen simulation 
 # 12/8/2022 our p-value to b-parameter simulations converged
 # our CTTICC formula is now ready to share with others
@@ -526,7 +530,11 @@ for (i in 1:nrow(df)){
   auc[i]<-integrate(f2, -6,6)
 }
 auc<-unlist(auc)
-h2<-hist(auc, color="cyan", xlim=c(0,3))
+h2<-hist(auc, col="cyan", xlab="Areas Between Curves", xlim=c(0,3))
+xfit<-seq(min(auc),max(auc),length=40)
+yfit<-dnorm(xfit,mean=mean(auc),sd=sd(auc))
+yfit <- yfit*diff(h2$mids[1:2])*length(auc)
+lines(xfit, yfit, col="red", lwd=2)
 
 par(mfrow=c(1,2))
 h
