@@ -25,8 +25,7 @@ main_findings:
   - '![](iccs.svg){.main_pic}' # main_pic is used to center align {.main_pic}
   - '![](https://www.siop.org/portals/84/Conference/2023/SIOP_Annual_Conference_2023_rgb_100ppi.png?ver=A30vhFpMOc5O9rvGEichoQ%3D%3D){.new-img-top}'
 #  - '![](HinderPlot.svg){.main_pic}'
-logocenter_name: '![](https://www.montclair.edu/university-communications/wp-content/uploads/sites/144//2020/10/hawk-logo-color.svg){.main-img-center}' 
-logoleft_name: '![](posterdown_logo.png){.main-img-left}'
+logoleft_name: '![](posterdown_logo.png){.main-img-left}''![](https://www.montclair.edu/university-communications/wp-content/uploads/sites/144//2020/10/hawk-logo-color.svg){.main-img-center}' 
 logoright_name: '![](drawing2.png){.main-img-right}'
 main_width: 0.2	
 csl: "apa7.csl"
@@ -66,18 +65,24 @@ knitr::write_bib(c('knitr','rmarkdown','posterdown','pagedown', 'mirt', 'geiger'
 }
 
 .main-img-right {
+  position: fixed;
   width: 100%;
+  bottom: 100px;
+  height: 500px;
 }
 
 .main-img-left {
-  width: 100%;
-}
-
-.main-img-center {
   position: fixed;
   width: 100%; 
   bottom: 10px;
   right: 600px;
+}
+
+.main-img-center {
+  position: fixed;
+  width: 700px; 
+  bottom: 100px;
+  right: 2000px;
 }
 
 .new-img-right {
@@ -104,7 +109,7 @@ p.caption {
 
 # Introduction
 
-Item characteristic curves are frequently referenced by psychometricians as visual indicators of important attributes of assessment items - most frequently *difficulty* and *discrimination*. This information is conveyed through item characteristic curves (see \@ref(fig:example) for reference). Assessment specialists who examine ICC's usually do so from within the psychometric framework of either Item Response Theory (IRT) or Rasch modeling. We previously provided an extension of this tradition of item characteristic visualization within the more commonly leveraged Classical Test Theory (CTT) framework. This current study builds on the first and focuses on placing the CTT p-value on the IRT b-parameter metric. 
+Item characteristic curves (ICCs) are frequently referenced by psychometricians as visual indicators of important attributes of assessment items - most frequently `difficulty` and `discrimination`. This information is conveyed through ICCs (see Figure \@ref(fig:example) for reference). Assessment specialists who examine ICC's usually do so from within the psychometric framework of either Item Response Theory (IRT) or Rasch modeling. We previously provided an extension of this tradition of item characteristic visualization within the more commonly leveraged Classical Test Theory (CTT) framework, but we did not focus on functional location. This current study builds on the first and focuses on placing the CTT p-value on the IRT b-parameter metric. 
 
 ```{r example, include=TRUE, fig.cap="Item characteristic curves reflecting visual differences in difficulty and discrimination.", echo=FALSE, warning=FALSE, message=FALSE, out.width = "100%", out.height="80%"}
 
@@ -185,11 +190,11 @@ base+
 
 # Method
 
-We built six simulations of binary data, each with different shapes and p-values, as can be seen in \@ref(fig:simulatedgraphs). Each simulation consisted of 10,000 observations and 100 items. Simulation 1 was uniform, with p-values ranging from 0 to 1. Simultion 2 was a normal distribution with p-values centered around 0.5. Simulation 3 was an inverted U-shaped distribution, with p-values ranging from 0 to 1. Simulation 4 was a left skewed distribution with p-values centered around 0.5, and simulation 5 was a right skewed distribution with p-values centered around 0.5.
+We built five simulations of binary data, each with different distributions of p-values, as can be seen in Figure \@ref(fig:simulatedgraphs). Each simulation consisted of 10,000 observations and 100 items. Simulation 1 was uniform, with p-values ranging from 0 to 1. Simulation 2 was a normal distribution with p-values centered around 0.5. Simulation 3 was an inverted U-shaped distribution, with p-values ranging from 0 to 1. Simulation 4 was a left skewed distribution with p-values centered around 0.5, and simulation 5 was a right skewed distribution with p-values centered around 0.5.
 
-We regressed *b*-parameters onto $z_g$ indices of all simulations, and used the average slope and intercept to rescale *p-values* on a psuedo-$\theta$ scale for graphing purposes. 
+We regressed *b*-parameters onto $z_g$ indices of all simulations, and used the average slope and intercept to re-scale *p-values* on a pseudo-$\theta$ scale for graphing purposes. 
 
-```{r simulatedgraphs, results="hide", fig.cap="Shape of prescribed distributions of *p*-values across Study 1 conditions.", fig.height=6, fig.width=8}
+```{r simulatedgraphs, results="hide", fig.cap="Shape of prescribed distributions of *p*-values across Study 1 conditions.", fig.height=5, fig.width=11}
 
 dparabola <- function(x){ifelse(x < 1 | x > 5, 0, (3/16)*(x-3)^2)}
 library(ggplot2)
@@ -309,8 +314,9 @@ summary(aov_slo)
 ```
 
 # Results
-The resulting regression coefficients for all 5 simulations was an average intercept of approximately 0 and an average slope of -1.53. *note: include the actual statistics Two different one-way ANOVAs were applied with a non-significant mean intercept across conditions (F=`r f_Value_int`; p=`r pvalue_int`) and a significant but small mean slope (F=`r f_Value_slo`; p=`r pvalue_Slo`). This indicates that our scaling was sample dependent, however the differences were minimal ($\eta^2=0.0003$), as can be seen in the central figure. In this graph we report the distribution of slopes for all 1,000 simulations per simulation condition. They are all centered at about -1.53, with very little deviance in terms of shape, kurtosis, or spread. There were 3383 cases removed from the overall 500000 simulated items due to extreme b-estimates.
-The area between ICC’s was calculated between CTT-derived and IRT-derived ICC’s. The average difference for all 100 curves was 0.214. As we can see in \@ref(fig:histrogram2), most of the data is skewed towards the lower end, indicating that out of the 100 items, most of them have areas between the curves of less than 0.21. This diff was computed after scaling our Zg using the coefficients estimated with our simulations. Without the regression coefficient modifier the average area under the curves were 0.80, as we can see in \@ref(fig:histrogram). We ran a test of significance between these two means. Our results are t(99) = 11.72, p < .001. 
+The resulting regression coefficients for all 5 simulations was an average intercept of approximately 0 and an average slope of -1.53. Two different one-way ANOVAs were applied with a non-significant mean intercept across conditions (F=`r round(f_Value_int, 2)`; p=`r round(pvalue_int, 2)`) and a statistically significant but meaningless mean slope effect (F=`r round(f_Value_slo, 2)`; p=`r round(pvalue_Slo, 2)`, $\eta^2=0.0003$), as can be seen in the central figure. In this graph we present the empirical distributions of both slopes and intercepts for all 10,000 simulations per simulation condition. They are all centered at about -1.53, with very little deviance in terms of shape, kurtosis, or spread.[^footie].
+
+[^footie]: There were 3383 cases removed from the overall 500000 simulated items due to extreme b-estimates.
 
 
 ```{r ResourPlot, fig.cap="Histograms of slope and intercept distributions by different simulated conditions.", results="hide"}
@@ -342,7 +348,7 @@ dev.off()
 
 
 
-```{r plotting, results="hide", fig.cap="Four ICCs highlighting the difference between CTT and IRT-derivated ICCs at different levels of DIF.", fig.height=5, fig.width=8 }
+```{r plotting, results="hide", fig.cap="Four ICCs highlighting the difference between CTT and IRT-derivated ICCs at different levels of DIF.", fig.height=7, fig.width=11 }
 data<-read.csv("simulated_data.csv", header=FALSE)
 #data$v30<-abs(data$v30-1)
 library(mirt)
@@ -427,7 +433,12 @@ grid.arrange(p2,p1,p3,p4, nrow=2, ncol=2)
 ##############################################################################
 ```
 
-```{r histrogram, fig.cap="Histogram of Diffs between ICCs plotted using IRT-paramets VS ICCs plotted using CTT statistics using regression coeficients modifier", results="hide", fig.height=5, fig.width=8}
+
+The area between ICC’s was calculated between CTT-derived and IRT-derived ICC’s. The average difference for all 100 curves was 0.214. As we can see in Figure \@ref(fig:histrogram2), most of the data is located at the lower end, indicating that out of the 100 items, most of them have areas between the curves of less than 0.21. This DIF was computed after scaling our $Z_{g}$ using the coefficients estimated with our simulations. Without the regression coefficient modifier the average area under the curves was 0.80, as we can see in Figure \@ref(fig:histrogram). We ran a test of significance between these two means. Our results are t(99) = 11.72, p < .001. 
+
+
+
+```{r histrogram, fig.cap="Histogram of DIF between ICCs plotted using IRT parameters vs ICCs plotted using CTT parameters.", results="hide", fig.height=5, fig.width=11}
 #Area between curves
 #Preparing data
 library(geiger)
@@ -463,7 +474,7 @@ for (i in 1:nrow(df)){
   auc[i]<-integrate(f2, -6,6)
 }
 auc<-unlist(auc)
-h<-hist(auc, col="blue", xlab="Areas Between Curves", xlim=c(0,3))
+h<-hist(auc, breaks=20, col="blue", main="Histogram of DIF", xlab="Areas Between Curves", xlim=c(0,3))
 #h
 xfit<-seq(min(auc),max(auc),length=40)
 yfit<-dnorm(xfit,mean=mean(auc),sd=sd(auc))
@@ -473,7 +484,7 @@ lines(xfit, yfit, col="red", lwd=2)
 ```
 
 
-```{r histrogram2, results="hide", fig.cap="Histogram of all areas between ICCs plotted using IRT parameters vs ICCs plotted using CTT parameters.", fig.height=5, fig.width=8}
+```{r histrogram2, results="hide", fig.cap="Histogram of DIF between ICCs plotted using IRT-paramets VS ICCs plotted using CTT statistics using regression coeficients modifier", fig.height=5, fig.width=11}
 ### Cross-validating with wingen simulation 
 # 12/8/2022 our p-value to b-parameter simulations converged
 # our CTTICC formula is now ready to share with others
@@ -530,7 +541,7 @@ for (i in 1:nrow(df)){
   auc[i]<-integrate(f2, -6,6)
 }
 auc<-unlist(auc)
-h2<-hist(auc, col="cyan", xlab="Areas Between Curves", xlim=c(0,3))
+h2<-hist(auc, breaks=20, col="cyan", main="Histogram of DIF", xlab="Areas Between Curves", xlim=c(0,3))
 xfit<-seq(min(auc),max(auc),length=40)
 yfit<-dnorm(xfit,mean=mean(auc),sd=sd(auc))
 yfit <- yfit*diff(h2$mids[1:2])*length(auc)
